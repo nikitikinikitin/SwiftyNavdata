@@ -146,7 +146,9 @@ public class NavdataLoader {
             let splitLine = line.components(separatedBy: " ").filter { $0 != "" }
             guard !splitLine.isEmpty else { continue }
             let rowCode = splitLine[0]
-            if rowCode == "2" {
+            
+            switch rowCode {
+            case "2":
                 //NDB
                 guard splitLine.count >= 9 else { continue }
                 if let lat = Float(splitLine[1]),
@@ -157,8 +159,8 @@ public class NavdataLoader {
                     let name = splitLine[8..<splitLine.count].joined(separator: " ")
                     ndb.append(NDB(name: name, identifier: splitLine[7], latitude: lat, longitude: lon, elevation: elev, frequency: freq, receptionRange: range))
                 }
-            } else if rowCode == "3" {
-                //VOR
+            case "3":
+                // VOR
                 guard splitLine.count >= 9 else { continue }
                 if let lat = Float(splitLine[1]),
                    let lon = Float(splitLine[2]),
@@ -169,19 +171,30 @@ public class NavdataLoader {
                     let name = splitLine[8..<splitLine.count].joined(separator: " ")
                     vor.append(VOR(name: name, identifier: splitLine[7], latitude: lat, longitude: lon, elevation: elev, frequency: freq, receptionRange: range, slavedVariation: slVar))
                 }
-            } else if rowCode == "4" || rowCode == "5" {
+                
+            case "4":
                 //Loc
                 guard splitLine.count >= 11 else { continue }
-                if let type = Int(splitLine[0]),
-                   let lat = Float(splitLine[1]),
+                if let lat = Float(splitLine[1]),
                    let lon = Float(splitLine[2]),
                    let elev = Int(splitLine[3]),
                    let freq = Int(splitLine[4]),
                    let range = Int(splitLine[5]),
                    let bearing = Float(splitLine[6]) {
-                    loc.append(LOC(name: splitLine[10], airportICAO: splitLine[8], identifier: splitLine[7], associatedRunwayNumber: splitLine[9], frequency: freq, elevation: elev, latitude: lat, longitude: lon, bearing: bearing, receptionRange: range, type: type))
+                    loc.append(LOC(name: splitLine[10], airportICAO: splitLine[8], identifier: splitLine[7], associatedRunwayNumber: splitLine[9], frequency: freq, elevation: elev, latitude: lat, longitude: lon, bearing: bearing, receptionRange: range, type: 4))
                 }
-            } else if rowCode == "6" {
+            case "5":
+                //Loc
+                guard splitLine.count >= 11 else { continue }
+                if let lat = Float(splitLine[1]),
+                   let lon = Float(splitLine[2]),
+                   let elev = Int(splitLine[3]),
+                   let freq = Int(splitLine[4]),
+                   let range = Int(splitLine[5]),
+                   let bearing = Float(splitLine[6]) {
+                    loc.append(LOC(name: splitLine[10], airportICAO: splitLine[8], identifier: splitLine[7], associatedRunwayNumber: splitLine[9], frequency: freq, elevation: elev, latitude: lat, longitude: lon, bearing: bearing, receptionRange: range, type: 5))
+                }
+            case "6":
                 //Glideslope
                 guard splitLine.count >= 11 else { continue }
                 if let lat = Float(splitLine[1]),
@@ -194,33 +207,37 @@ public class NavdataLoader {
                     let bearing = bearangle - angle * 100
                     gs.append(Glideslope(name: splitLine[10], airportICAO: splitLine[8], identifier: splitLine[7], associatedRunwayNumber: splitLine[9], frequency: freq, elevation: elev, latitude: lat, longitude: lon, bearing: Float(bearing), glideslope: Float(angle), receptionRange: range))
                 }
-            } else if rowCode == "7" || rowCode == "8" || rowCode == "9" {
+            case "7":
                 //Beacon
                 guard splitLine.count >= 9 else { continue }
-                if let type = Int(splitLine[0]),
-                   let lat = Float(splitLine[1]),
+                if let lat = Float(splitLine[1]),
                    let lon = Float(splitLine[2]),
                    let elev = Float(splitLine[3]),
                    let bearing = Float(splitLine[6]){
-                    bcn.append(Beacon(name: splitLine[10], type: type, airportICAO: splitLine[8], associatedRunwayNumber: splitLine[9], latitude: lat, longitude: lon, elevation: elev, bearing: bearing))
+                    bcn.append(Beacon(name: splitLine[10], type: 7, airportICAO: splitLine[8], associatedRunwayNumber: splitLine[9], latitude: lat, longitude: lon, elevation: elev, bearing: bearing))
                 }
-            }
-            /*
-            else if rowCode == "12" || rowCode == "13" {
-                //DME (WIP)
-                continue
-                guard splitLine.count >= 11 else { continue }
-                if let type = Int(splitLine[0]),
-                   let lat = Float(splitLine[1]),
+            case "8":
+                //Beacon
+                guard splitLine.count >= 9 else { continue }
+                if let lat = Float(splitLine[1]),
                    let lon = Float(splitLine[2]),
-                   let elev = Int(splitLine[3]),
-                   let freq = Int(splitLine[4]),
-                   let range = Int(splitLine[5]),
-                   let bias = Float(splitLine[6]){
-                    dme.append(DME(name: splitLine[10], latitude: lat, longitude: lon, elevation: elev, frequency: freq, receptionRange: range, bias: bias, identifier: splitLine[7], airportICAO: splitLine[8], associatedRunwayNumber: splitLine[9], type: type))
+                   let elev = Float(splitLine[3]),
+                   let bearing = Float(splitLine[6]){
+                    bcn.append(Beacon(name: splitLine[10], type: 8, airportICAO: splitLine[8], associatedRunwayNumber: splitLine[9], latitude: lat, longitude: lon, elevation: elev, bearing: bearing))
                 }
+            case "9":
+                //Beacon
+                guard splitLine.count >= 9 else { continue }
+                if let lat = Float(splitLine[1]),
+                   let lon = Float(splitLine[2]),
+                   let elev = Float(splitLine[3]),
+                   let bearing = Float(splitLine[6]){
+                    bcn.append(Beacon(name: splitLine[10], type: 9, airportICAO: splitLine[8], associatedRunwayNumber: splitLine[9], latitude: lat, longitude: lon, elevation: elev, bearing: bearing))
+                }
+                
+            default:
+                continue
             }
- */
         }
         return ( ndb, vor, loc, gs, bcn/*, dme*/ )
     }
