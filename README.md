@@ -1,10 +1,10 @@
 # SwiftyNavdata
 
-SwiftyNavdata is a simple package to work with Infinite Flight Airport Editing Team's formats. It features support for both **.json** and **.dat** files, ```NavObject``` protocol which supplies the waypoint's name and location to simplify code writing and protections against file anomalies.
+SwiftyNavdata is a simple package to work with Infinite Flight Airport Editing Team's navdata formats and airports. It features support for both **.json** and **.dat** files, ```NavObject``` protocol which supplies the waypoint's name and location to simplify code writing, detailed airport data and protections against file anomalies.
 
 ## Usage
 
-Using SwiftyNavdata is as simple as calling one of it's intuitevily named static functions, like ```NavdataLoader.decodeFixDat(yourUrl)```.
+Using SwiftyNavdata is as simple as calling one of it's intuitevily named static functions, like ```NavdataParser.decodeFixDat(yourUrl)``` or ```AirportParser.parseAirportWithNodes(yourUrl)```.
 
 ## On DME support
 
