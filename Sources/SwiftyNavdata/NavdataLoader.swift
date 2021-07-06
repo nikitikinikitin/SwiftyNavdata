@@ -7,9 +7,11 @@
 
 import Foundation
 
+@available(*, deprecated, renamed: "NavdataParser")
+public typealias NavdataLoader = NavdataParser
 
 ///An object that decodes navdata from IFAET repository file formats (**.json** and **.dat**)
-public class NavdataLoader {
+public class NavdataParser {
     
     //MARK: JSON decoding
     
