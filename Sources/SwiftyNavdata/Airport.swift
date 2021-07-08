@@ -32,6 +32,10 @@ public struct Airport: Codable {
     public var elevation: Int
     public var icao: String
     public var name: String
+    ///IATA Airport code
+    var iata: String?
+    ///FAA Airport code
+    var faa: String?
     
     //MARK: Runways
     public var runways: [Runway]

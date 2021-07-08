@@ -155,6 +155,17 @@ public class AirportParser {
                 if let elev = Int(line[1]) {
                     airport.elevation = elev
                 }
+            
+            case "1302":
+                guard lineCount > 2 else {continue}
+                switch line[1] {
+                case "iata_code":
+                    airport.iata = line[2]
+                case "faa_code":
+                    airport.faa = line[2]
+                default:
+                    continue
+                }
                 
             //MARK: Runways
             case "100":
@@ -344,12 +355,15 @@ public class AirportParser {
         var airports = [Airport]()
         guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: []) else { return [] }
         let urls = enumerator.allObjects
+        // Old APIs can cause memory leaks
+        autoreleasepool {
         for case let url as URL in urls {
             guard url.pathExtension == "dat" else {continue}
             if let fileString = try? String(contentsOf: url) {
                 let airport = decodeAirport(fileString, parseNodes: parseNodes)
                 airports.append(airport)
             }
+        }
         }
         return airports
     }
