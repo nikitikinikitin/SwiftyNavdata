@@ -356,14 +356,15 @@ public class AirportParser {
         guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: []) else { return [] }
         let urls = enumerator.allObjects
         // Old APIs can cause memory leaks
-        autoreleasepool {
+        
         for case let url as URL in urls {
             guard url.pathExtension == "dat" else {continue}
+            autoreleasepool {
             if let fileString = try? String(contentsOf: url) {
                 let airport = decodeAirport(fileString, parseNodes: parseNodes)
                 airports.append(airport)
             }
-        }
+            }
         }
         return airports
     }
