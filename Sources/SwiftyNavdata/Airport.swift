@@ -33,9 +33,9 @@ public struct Airport: Codable {
     public var icao: String
     public var name: String
     ///IATA Airport code
-    var iata: String?
+    public var iata: String?
     ///FAA Airport code
-    var faa: String?
+    public var faa: String?
     
     //MARK: Runways
     public var runways: [Runway]
@@ -82,7 +82,7 @@ public struct Airport: Codable {
     }
     
     //MARK: Nodes
-    var pavement: [Pavement]
+    public var pavement: [Pavement]
     public var linearFeatures: [LinearFeature]
     public var airportBoundary: [Node]
     
@@ -204,7 +204,7 @@ public struct Airport: Codable {
     }
     
     //MARK: Lighting Objects
-    var lightingObjects: [LightingObject]
+    public var lightingObjects: [LightingObject]
     public struct LightingObject: Codable {
         public init(latitude: Float, longitude: Float, type: Int, orientation: Float, glideslopeAngle: Float, associatedRunway: String, description: String? = nil) {
             self.latitude = latitude
