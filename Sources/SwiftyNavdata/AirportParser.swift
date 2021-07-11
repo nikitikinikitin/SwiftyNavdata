@@ -348,17 +348,17 @@ public class AirportParser {
     }
     
     /**
-     Parses all apt.dat files in a folder and returns an array of Airport objects
+     Parses all apt.dat files in a folder and all of it's subfolders and returns an array of Airport objects
      - Warning: Keep in mind, if you're gonna run it with the whole repository, it would take a few minutes and will occupy hundreds of megabytes if encoded as json
      */
     public static func parseAllAirports(_ url: URL, parseNodes: Bool) -> [Airport] {
         var airports = [Airport]()
         guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: []) else { return [] }
         let urls = enumerator.allObjects
-        // Old APIs can cause memory leaks
         
         for case let url as URL in urls {
             guard url.pathExtension == "dat" else {continue}
+            // autoreleasepool prevents a memory leak from String(contentsOf:)
             autoreleasepool {
             if let fileString = try? String(contentsOf: url) {
                 let airport = decodeAirport(fileString, parseNodes: parseNodes)
@@ -366,6 +366,64 @@ public class AirportParser {
             }
             }
         }
+        return airports
+    }
+    
+    /**
+     Parses all apt.dat files in a folder and all of it's subfolders and returns an array of Airport objects. This is a multithreaded method, thus, it needs to be used carefully. If used properly it can be 2-3 times faster than parseAllAirports.
+     - Warning: Keep in mind, if you're gonna run it with the whole repository, it would take some time and will occupy hundreds of megabytes if encoded as json
+     - Parameters:
+       - url: URL of the source
+       - parseNodes: whether the nodes would be parsed or not
+       - threads: Amount of threads (DispatchQueues) the function will use. **Don't set it to more than the amount of cores** the device has, it is best when the value is a bit less or equal to the core count.
+     */
+    public static func parseAllAirportsMultithreaded(_ url: URL, parseNodes: Bool, threads amountOfThreads: Int) -> [Airport] {
+        var airports = [Airport]()
+        var threadCount = amountOfThreads
+        guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: []) else { return [] }
+        let urls = enumerator.allObjects
+        
+        let urlsCount = urls.count
+        let objectsPerQueue = urlsCount/threadCount
+        if threadCount >= urlsCount {
+            threadCount = urlsCount
+        }
+        
+        // Semaphore which is used to wait for all queues to finish
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        // Queue for additions to the airports array
+        let airportsArrayAdditionQueue = DispatchQueue.global(qos: .userInitiated)
+        var queueCompletionCount = 0
+        for i in 1...threadCount {
+            DispatchQueue.global(qos: .userInitiated).async {
+                
+                let thisQueueUrls = urls[objectsPerQueue * (i - 1)..<objectsPerQueue * i]
+                var thisQueueAirports = [Airport]()
+                
+                for case let url as URL in thisQueueUrls {
+                    guard url.pathExtension == "dat" else {continue}
+                    autoreleasepool {
+                    if let fileString = try? String(contentsOf: url) {
+                        let airport = decodeAirport(fileString, parseNodes: parseNodes)
+                        thisQueueAirports.append(airport)
+                    }
+                    }
+                }
+                
+                queueCompletionCount += 1
+                airportsArrayAdditionQueue.sync {
+                    // This is for no overlaps between additions to airports array
+                    airports += thisQueueAirports
+                }
+                if queueCompletionCount >= threadCount {
+                    // All queues finished
+                    semaphore.signal()
+                }
+            }
+        }
+        // This makes the code wait for all threads to finish
+        semaphore.wait()
         return airports
     }
 }
