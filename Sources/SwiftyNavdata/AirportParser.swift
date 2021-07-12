@@ -383,7 +383,10 @@ public class AirportParser {
         if amountOfThreads != nil {
             threadCount = amountOfThreads!
         } else {
-            threadCount = ProcessInfo.processInfo.processorCount
+            threadCount = ProcessInfo.processInfo.processorCount / 2
+            if threadCount == 0 {
+                threadCount = 2
+            }
         }
         
         guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: []) else { return [] }
