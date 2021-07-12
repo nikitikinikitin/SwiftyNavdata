@@ -375,11 +375,17 @@ public class AirportParser {
      - Parameters:
        - url: URL of the source
        - parseNodes: whether the nodes would be parsed or not
-       - threads: Amount of threads (DispatchQueues) the function will use. **Don't set it to more than the amount of cores** the device has, it is best when the value is a bit less or equal to the core count.
+       - threads: Amount of threads (DispatchQueues) the function will use. **Don't set it to more than the amount of cores** the device has, it is best when the value is a bit less or equal to the core count. Will be set to the amount of available processing cores if not provided.
      */
-    public static func parseAllAirportsMultithreaded(_ url: URL, parseNodes: Bool, threads amountOfThreads: Int) -> [Airport] {
+    public static func parseAllAirportsMultithreaded(_ url: URL, parseNodes: Bool, threads amountOfThreads: Int? = nil) -> [Airport] {
         var airports = [Airport]()
-        var threadCount = amountOfThreads
+        var threadCount: Int!
+        if amountOfThreads != nil {
+            threadCount = amountOfThreads!
+        } else {
+            threadCount = ProcessInfo.processInfo.processorCount
+        }
+        
         guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: []) else { return [] }
         let urls = enumerator.allObjects
         
