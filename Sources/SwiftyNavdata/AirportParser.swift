@@ -375,7 +375,7 @@ public class AirportParser {
      - Parameters:
        - url: URL of the source
        - parseNodes: whether the nodes would be parsed or not
-       - threads: Amount of threads (DispatchQueues) the function will use. **Don't set it to more than the amount of cores** the device has, it is best when the value is a bit less or equal to the core count. Will be set to the amount of available processing cores if not provided.
+       - threads: Amount of threads (DispatchQueues) the function will use. **Don't set it to more than the amount of cores** the device has, it is best when the value is a bit less or equal to the core count. If set to nil, it will estimate the best amount of cores based on device's specs.
      */
     public static func parseAllAirportsMultithreaded(_ url: URL, parseNodes: Bool, threads amountOfThreads: Int? = nil) -> [Airport] {
         var airports = [Airport]()
