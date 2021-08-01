@@ -96,13 +96,33 @@ public struct Airport: Codable {
     public var airportBoundary: [Node]
     
     public struct Node: Codable {
-        
+        @available(*, deprecated, message: "beizerLatitude and beizerLongitude were corrected to the right spelling. This initializer perfectly works, but from now on try to use the one with bezierLatitude and bezierLongitude")
         public init(rowCode: Int, latitude: Float, longitude: Float, beizerLatitude: Float? = nil, beizerLongitude: Float? = nil, lineType: Int? = nil) {
             self.rowCode = rowCode
             self.latitude = latitude
             self.longitude = longitude
-            self.beizerLatitude = beizerLatitude
-            self.beizerLongitude = beizerLongitude
+            self.bezierLatitude = beizerLatitude
+            self.bezierLongitude = beizerLongitude
+            self.lineType = lineType
+        }
+        
+        @available(*, deprecated, message: "beizerLatitude and beizerLongitude were corrected to the right spelling. This still works, but it's best to change it to the correct spelling.", renamed: "bezierLatitude")
+        public var beizerLatitude: Float? {
+            get { bezierLatitude }
+            set { bezierLatitude = newValue }
+        }
+        @available(*, deprecated, message: "beizerLongitude and beizerLongitude were corrected to the right spelling. This still works, but it's best to change it to the correct spelling.", renamed: "bezierLongitude")
+        public var beizerLongitude: Float? {
+            get { bezierLongitude }
+            set { bezierLongitude = newValue }
+        }
+        
+        public init(rowCode: Int, latitude: Float, longitude: Float, bezierLatitude: Float? = nil, bezierLongitude: Float? = nil, lineType: Int? = nil) {
+            self.rowCode = rowCode
+            self.latitude = latitude
+            self.longitude = longitude
+            self.bezierLatitude = bezierLatitude
+            self.bezierLongitude = bezierLongitude
             self.lineType = lineType
         }
         
@@ -111,9 +131,9 @@ public struct Airport: Codable {
         public var longitude: Float
         
         ///Latitude of Bezier control point, only for 112, 114, 116 row codes
-        public var beizerLatitude: Float?
+        public var bezierLatitude: Float?
         ///Longitude of Bezier control point, only for 112, 114, 116 row codes
-        public var beizerLongitude: Float?
+        public var bezierLongitude: Float?
         
         ///Code for painted line type on line segment starting at this node
         public var lineType: Int?

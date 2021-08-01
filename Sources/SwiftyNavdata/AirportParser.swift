@@ -46,8 +46,8 @@ public class AirportParser {
             case 112:
                 // Beizer node
                 if lineCount > 4 {
-                    node.beizerLatitude = Float(line[3])
-                    node.beizerLongitude = Float(line[4])
+                    node.bezierLatitude = Float(line[3])
+                    node.bezierLongitude = Float(line[4])
                     if lineCount > 5 {
                         node.lineType = Int(line[5])
                     }
@@ -72,8 +72,8 @@ public class AirportParser {
             case 114:
                 // Beizer node, close boundary
                 if lineCount > 4 {
-                    node.beizerLatitude = Float(line[3])
-                    node.beizerLongitude = Float(line[4])
+                    node.bezierLatitude = Float(line[3])
+                    node.bezierLongitude = Float(line[4])
                     if lineCount > 5 {
                         node.lineType = Int(line[5])
                     }
@@ -93,8 +93,8 @@ public class AirportParser {
             case 116:
                 // Beizer node
                 if lineCount > 4 {
-                    node.beizerLatitude = Float(line[3])
-                    node.beizerLongitude = Float(line[4])
+                    node.bezierLatitude = Float(line[3])
+                    node.bezierLongitude = Float(line[4])
                 }
             default:
                 return
