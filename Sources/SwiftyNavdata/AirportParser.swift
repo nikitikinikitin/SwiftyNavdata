@@ -163,6 +163,16 @@ public class AirportParser {
                     airport.iata = line[2]
                 case "faa_code":
                     airport.faa = line[2]
+                case "datum_lat":
+                    airport.latitude = Float(line[2])
+                case "datum_lon":
+                    airport.longitude = Float(line[2])
+                case "country":
+                    let value = line[2..<line.count].joined(separator: " ")
+                    airport.country = value
+                case "city":
+                    let value = line[2..<line.count].joined(separator: " ")
+                    airport.city = value
                 default:
                     continue
                 }
