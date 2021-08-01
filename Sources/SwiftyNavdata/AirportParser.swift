@@ -11,7 +11,7 @@ import Foundation
 public class AirportParser {
     
     //MARK: Airport parser
-    private static func decodeAirport(_ fileString: String, parseNodes: Bool) -> Airport {
+    private static func decodeAirport(_ fileString: String, parseNodes: NodeParsingOption) -> Airport {
         var airport = Airport(rowCode: -1, elevation: -1000, icao: "", name: "", runways: [], pavement: [], linearFeatures: [], airportBoundary: [], viewPoint: nil, startupLocations: [], lightBeacon: nil, lightingObjects: [], atcFrequencies: [])
         let lines = fileString.components(separatedBy: "\n")
         
@@ -34,7 +34,7 @@ public class AirportParser {
             guard lineCount > 2 else {return}
             guard let lat = Float(line[1]),
                   let lon = Float(line[2]) else {return}
-            var node = Airport.Node(rowCode: 111, latitude: lat, longitude: lon, beizerLatitude: nil, beizerLongitude: nil, lineType: nil)
+            var node = Airport.Node(rowCode: 111, latitude: lat, longitude: lon, bezierLatitude: nil, bezierLongitude: nil, lineType: nil)
             switch code {
             case 111:
                 // PLain node
@@ -127,15 +127,8 @@ public class AirportParser {
             currentNodeObjectNodes.removeAll()
         }
         
-        // This is to not have hundreds of checks whether parseNodes is true
+        // This is to not have hundreds of checks for whether the node should be parsed
         var nodeHandler: (([String], Int, Int, Int) -> Void)!
-        if parseNodes {
-            nodeHandler = parseNode
-        } else {
-            nodeHandler = { (_, _, _, _) in
-                return
-            }
-        }
         
         
         
@@ -298,14 +291,36 @@ public class AirportParser {
                     currentNodeObject = Airport.Pavement(surfaceType: sfcType, description: name, nodes: [])
                 }
                 
+                if parseNodes == .parseAll {
+                    nodeHandler = parseNode
+                } else {
+                    nodeHandler = { (_, _, _, _) in
+                        return
+                    }
+                }
             case "120":
                 // Line header
                 currentNodeObjectType = 120
                 let name = line[1..<lineCount].joined(separator: " ")
                 currentNodeObject = Airport.LinearFeature(description: name, nodes: [])
                 
+                if parseNodes == .parseAll {
+                    nodeHandler = parseNode
+                } else {
+                    nodeHandler = { (_, _, _, _) in
+                        return
+                    }
+                }
             case "130":
                 // Airport boundary header
+                if parseNodes != .none {
+                    nodeHandler = parseNode
+                } else {
+                    nodeHandler = { (_, _, _, _) in
+                        return
+                    }
+                }
+                
                 currentNodeObjectType = 130
                 currentNodeObject = nil
                 
@@ -335,33 +350,59 @@ public class AirportParser {
         return airport
     }
     
+    public enum NodeParsingOption {
+        /// Parse only the airport boundary
+        case parseBoundary
+        /// Parse airport boundary, all pavements and all lines
+        case parseAll
+        /// Don't parse any nodes
+        case none
+    }
+    
     /**
      Parses an apt.dat file into a detailed Airport object with detailed node information.
+     - Attention: This method is perfectly fine to use, but it is suggested to move to `parseAirport(_ url: URL, parseNodes: NodeParsingOption)` for more control over parsing.
      - Note: If you don't need nodes, use parseAirportWithoutNodes for a speed increase of up to 30%
      - parameter url: Source file URL
      */
     public static func parseAirportWithNodes(_ url: URL) throws -> Airport {
         let data = try String(contentsOf: url)
-        let airport = decodeAirport(data, parseNodes: true)
+        let airport = decodeAirport(data, parseNodes: .parseAll)
         return airport
     }
     
     /**
      Parses an apt.dat file into a detailed Airport object without the node information, thus ```pavement```, ```linearFeatures```, ```airportBoundary``` will be empty arrays.
+     - Attention: This method is perfectly fine to use, but it is suggested to move to `parseAirport(_ url: URL, parseNodes: NodeParsingOption)` for more control over parsing.
      - Note: If you need nodes, use parseAirportWithNodes, note that the execution time might be up by more than 30%
      - parameter url: Source file URL
      */
     public static func parseAirportWithoutNodes(_ url: URL) throws -> Airport {
         let data = try String(contentsOf: url)
-        let airport = decodeAirport(data, parseNodes: false)
+        let airport = decodeAirport(data, parseNodes: .none)
+        return airport
+    }
+    
+    /**
+     Parses an apt.dat file into an `Airport` object.
+     - Parameters:
+       - url: Source file URL
+       - parseNodes: a case of `NodeParsingOption` enum. See descriptions of it's cases for more info.
+     */
+    public static func parseAirport(_ url: URL, parseNodes: NodeParsingOption) throws -> Airport {
+        let data = try String(contentsOf: url)
+        let airport = decodeAirport(data, parseNodes: parseNodes)
         return airport
     }
     
     /**
      Parses all apt.dat files in a folder and all of it's subfolders and returns an array of Airport objects
      - Warning: Keep in mind, if you're gonna run it with the whole repository, it would take a few minutes and will occupy hundreds of megabytes if encoded as json
+     - Parameters:
+       - url: Source file URL
+       - parseNodes: a case of `NodeParsingOption` enum. See descriptions of it's cases for more info.
      */
-    public static func parseAllAirports(_ url: URL, parseNodes: Bool) -> [Airport] {
+    public static func parseAllAirports(_ url: URL, parseNodes: NodeParsingOption) -> [Airport] {
         var airports = [Airport]()
         guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: []) else { return [] }
         let urls = enumerator.allObjects
@@ -380,14 +421,24 @@ public class AirportParser {
     }
     
     /**
+     Parses all apt.dat files in a folder and all of it's subfolders and returns an array of Airport objects
+     - Attention: This method is perfectly fine to use, but it is suggested to move to the new version where **parseNodes** is of type `NodeParsingOption` instead of `Bool` for more control over parsing.
+     - Warning: Keep in mind, if you're gonna run it with the whole repository, it would take a few minutes and will occupy hundreds of megabytes if encoded as json
+     */
+    public static func parseAllAirports(_ url: URL, parseNodes: Bool) -> [Airport] {
+        let option: NodeParsingOption = parseNodes ? .parseAll : .none
+        return parseAllAirports(url, parseNodes: option)
+    }
+    
+    /**
      Parses all apt.dat files in a folder and all of it's subfolders and returns an array of Airport objects. This is a multithreaded method, thus, it needs to be used carefully. If used properly it can be 2-3 times faster than parseAllAirports.
      - Warning: Keep in mind, if you're gonna run it with the whole repository, it would take some time and will occupy hundreds of megabytes if encoded as json
      - Parameters:
        - url: URL of the source
-       - parseNodes: whether the nodes would be parsed or not
+       - parseNodes: a case of `NodeParsingOption` enum. See descriptions of it's cases for more info.
        - threads: Amount of threads (DispatchQueues) the function will use. **Don't set it to more than the amount of cores** the device has, it is best when the value is a bit less or equal to the core count. If set to nil, it will estimate the best amount of cores based on device's specs.
      */
-    public static func parseAllAirportsMultithreaded(_ url: URL, parseNodes: Bool, threads amountOfThreads: Int? = nil) -> [Airport] {
+    public static func parseAllAirportsMultithreaded(_ url: URL, parseNodes: NodeParsingOption, threads amountOfThreads: Int? = nil) -> [Airport] {
         var airports = [Airport]()
         var threadCount: Int!
         if amountOfThreads != nil {
@@ -444,5 +495,19 @@ public class AirportParser {
         // This makes the code wait for all threads to finish
         semaphore.wait()
         return airports
+    }
+    
+    /**
+     Parses all apt.dat files in a folder and all of it's subfolders and returns an array of Airport objects. This is a multithreaded method, thus, it needs to be used carefully. If used properly it can be 2-3 times faster than parseAllAirports.
+     - Attention: This method is perfectly fine to use, but it is suggested to move to the new version where **parseNodes** is of type `NodeParsingOption` instead of `Bool` for more control over parsing.
+     - Warning: Keep in mind, if you're gonna run it with the whole repository, it would take some time and will occupy hundreds of megabytes if encoded as json
+     - Parameters:
+       - url: URL of the source
+       - parseNodes: whether the nodes would be parsed or not
+       - threads: Amount of threads (DispatchQueues) the function will use. **Don't set it to more than the amount of cores** the device has, it is best when the value is a bit less or equal to the core count. If set to nil, it will estimate the best amount of cores based on device's specs.
+     */
+    public static func parseAllAirportsMultithreaded(_ url: URL, parseNodes: Bool, threads amountOfThreads: Int? = nil) -> [Airport] {
+        let option: NodeParsingOption = parseNodes ? .parseAll : .none
+        return parseAllAirportsMultithreaded(url, parseNodes: option, threads: amountOfThreads)
     }
 }
