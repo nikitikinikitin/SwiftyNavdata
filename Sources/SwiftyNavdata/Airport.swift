@@ -468,6 +468,30 @@ public extension Airport.LightingObject {
     }
 }
 
+public extension Airport.StartupLocation {
+    ///ICAO type of the startup locations. See descriptions for aircraft in that class.  Please note this information might become outdated, for up to date information visit [this](https://ifatceg.com/size/)
+    enum StartupLocationType: String {
+        ///Aircraft: C172, SR22, F-14, F-16, F-18, F-22, Spitfire, TBM, XCub
+        case a = "A"
+        ///Aircraft: A-10, C208, Citation, CRJ
+        case b = "B"
+        ///Aircraft: A320, B717, B737, ERJ, Q400
+        case c = "C"
+        ///Aircraft: B757, B767, C-130, C-17, DC10, MD11
+        case d = "D"
+        ///Aircraft: A330, A340, A350, B747-200, B747-400, B777, B787
+        case e = "E"
+        ///Aircraft: A380, B747-8
+        case f = "F"
+        ///Appears in old airports for row code 15 startup locations or row code 1300 locations without a row code 1302 metadata row.
+        case unknown = "unknown"
+    }
+    
+    var enumSize: StartupLocationType {
+        return StartupLocationType(rawValue: self.icaoWidth?.uppercased() ?? "unknown") ?? .unknown
+    }
+}
+
 //MARK: Extensions with functions
 
 
