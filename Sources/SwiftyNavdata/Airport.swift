@@ -451,3 +451,68 @@ public extension Airport.LightingObject {
         return LightingObjectType.init(rawValue: type)
     }
 }
+
+//MARK: Extensions with functions
+
+
+extension Airport {
+    
+    //MARK: Location Calculation
+    /// Calculates the location based on the approximate center of the airport's boundary and sets `latitude` and `longitude` to the calculated values. Won't generate if boundary is empty.
+    mutating func calculateLocationBasedOnBoundary() {
+        guard !self.airportBoundary.isEmpty else {return}
+        
+        var minLat: Float = 360
+        var maxLat: Float = -360
+        var minLon: Float = 360
+        var maxLon: Float = -360
+        
+        for node in airportBoundary {
+            if node.latitude < minLat {
+                minLat = node.latitude
+            } else if node.latitude > maxLat {
+                maxLat = node.latitude
+            }
+            
+            if node.longitude < minLon {
+                minLon = node.longitude
+            } else if node.longitude > maxLon {
+                maxLon = node.longitude
+            }
+        }
+        
+        self.latitude = (minLat + maxLat) / 2
+        self.longitude = (minLon + maxLon) / 2
+    }
+    
+    /**
+     Calculates the location based on the center of the bounding box based on all of airport's runways and sets `latitude` and `longitude` to the calculated values. Won't generate if the `runways` array is empty.
+     - Note: This is the method that is used on Infinite Flight's in-game map
+     */
+    mutating func calculateLocationBasedOnRunways() {
+        
+        var minLat: Float = 360
+        var maxLat: Float = -360
+        var minLon: Float = 360
+        var maxLon: Float = -360
+        
+        let runwayEnds = runways.map { $0.runwayEnd1 } + runways.map { $0.runwayEnd2 }
+        
+        for runwayEnd in runwayEnds {
+            if runwayEnd.latitude < minLat {
+                minLat = runwayEnd.latitude
+            } else if runwayEnd.latitude > maxLat {
+                maxLat = runwayEnd.latitude
+            }
+            
+            if runwayEnd.longitude < minLon {
+                minLon = runwayEnd.longitude
+            } else if runwayEnd.longitude > maxLon {
+                maxLon = runwayEnd.longitude
+            }
+        }
+        
+        self.latitude = (minLat + maxLat) / 2
+        self.longitude = (minLon + maxLon) / 2
+    }
+}
