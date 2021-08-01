@@ -369,6 +369,35 @@ public extension Airport.Node {
         // 100 is just a placeholder to send nil
         return Airport.Node.LineType.init(rawValue: lineType ?? 100)
     }
+    
+    enum NodeType: Int {
+        ///Node
+        case normal = 111
+        ///Node with Bezier control point
+        case bezier = 112
+        /**
+         Node with implicit close of loop
+         - Warning: This, along with `.bezierCloseLoop` (row code 113) doesn't always mean that the object finished.
+         */
+        case normalCloseLoop = 113
+        /**
+         Node with Bezier control point, with implicit close of loop
+         - Warning: This, along with `.normalCloseLoop` (row code 113) doesn't always mean that the object finished.
+         */
+        case bezierCloseLoop = 114
+        ///Node terminating a string (no close loop)
+        case normalLineTermination = 115
+        ///Node with Bezier control point, terminating a string (no close loop)
+        case bezierLineTermination = 116
+        
+        ///In theory this shouldn't ever appear, but it's here just in case.
+        case unknownRowCode = 404
+    }
+    
+    ///enum type of the node based on it's row code
+    var nodeType: NodeType {
+        return NodeType.init(rawValue: rowCode) ?? .unknownRowCode
+    }
 }
 
 public extension Airport.LightBeacon {
