@@ -285,17 +285,22 @@ extension Airport: Identifiable {
 
 public extension Airport.AtcFacility {
     enum AtcFacilityType: Int {
+        /// ATIS, AWOS or ASOS
+        case recorded = 50
         case unicom = 51
-        //case clearanceDelivery = 52
+        case clearanceDelivery = 52
         case ground = 53
         case tower = 54
         case approach = 55
         case departure = 56
+        
+        ///In theory this shouldn't ever appear, but it's here just in case.
+        case unknownType = 404
     }
     
-    var facilityTypeEnum: AtcFacilityType? {
+    var facilityTypeEnum: AtcFacilityType {
         let value = rowCode % 1000
-        return AtcFacilityType.init(rawValue: value)
+        return AtcFacilityType.init(rawValue: value) ?? .unknownType
     }
 }
 
@@ -313,18 +318,21 @@ public extension Airport {
         ///Snow or ice. Runways markings can't be added to runways with this surface type.
         case snow = 14
         case transparent = 15
+        
+        ///In theory this shouldn't ever appear, but it's here just in case.
+        case unknownType = 404
     }
 }
 
 public extension Airport.Pavement {
-    var surfaceTypeEnum: Airport.SurfaceType? {
-        return Airport.SurfaceType.init(rawValue: surfaceType)
+    var surfaceTypeEnum: Airport.SurfaceType {
+        return Airport.SurfaceType.init(rawValue: surfaceType) ?? .unknownType
     }
 }
 
 public extension Airport.Runway {
-    var surfaceTypeEnum: Airport.SurfaceType? {
-        return Airport.SurfaceType.init(rawValue: surfaceType)
+    var surfaceTypeEnum: Airport.SurfaceType {
+        return Airport.SurfaceType.init(rawValue: surfaceType) ?? .unknownType
     }
 }
 
@@ -336,10 +344,13 @@ public extension Airport.Runway.RunwayEnd {
         case presicionApproachmarkers = 3
         case ukNonPrecisionMarkers = 4
         case ukPrecisionMarkers = 5
+        
+        ///In theory this shouldn't ever appear, but it's here just in case.
+        case unknownType = 404
     }
     
-    var RunwayMarkingTypeEnum: Airport.Runway.RunwayEnd.RunwayMarkingType? {
-        return Airport.Runway.RunwayEnd.RunwayMarkingType.init(rawValue: runwayMarkingType)
+    var RunwayMarkingTypeEnum: Airport.Runway.RunwayEnd.RunwayMarkingType {
+        return Airport.Runway.RunwayEnd.RunwayMarkingType(rawValue: runwayMarkingType) ?? .unknownType
     }
 }
 
@@ -406,7 +417,7 @@ public extension Airport.Node {
         case bezier = 112
         /**
          Node with implicit close of loop
-         - Warning: This, along with `.bezierCloseLoop` (row code 113) doesn't always mean that the object finished.
+         - Warning: This, along with `.bezierCloseLoop` (row code 114) doesn't always mean that the object finished.
          */
         case normalCloseLoop = 113
         /**
@@ -441,10 +452,13 @@ public extension Airport.LightBeacon {
         case greenWhiteYellow = 3
         ///White-white-green flashing (Military airport)
         case whiteWhiteGreen = 4
+        
+        ///In theory this shouldn't ever appear, but it's here just in case.
+        case unknownType = 404
     }
     
-    var beaconTypeEnum: BeaconType? {
-        return BeaconType.init(rawValue: beaconType)
+    var beaconTypeEnum: BeaconType {
+        return BeaconType.init(rawValue: beaconType) ?? .unknownType
     }
 }
 
@@ -462,9 +476,12 @@ public extension Airport.LightingObject {
         case triColorPapi = 5
         ///Runway guard (“wig-wag”) lights. Pulsating double amber lights alongside runway entrances
         case runwayGuardLights = 6
+        
+        ///In theory this shouldn't ever appear, but it's here just in case.
+        case unknownType = 404
     }
-    var lightingObjectTypeEnum: LightingObjectType? {
-        return LightingObjectType.init(rawValue: type)
+    var lightingObjectTypeEnum: LightingObjectType {
+        return LightingObjectType.init(rawValue: type) ?? .unknownType
     }
 }
 
