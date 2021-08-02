@@ -512,7 +512,7 @@ public extension Airport.StartupLocation {
 //MARK: Extensions with functions
 
 
-extension Airport {
+public extension Airport {
     
     //MARK: Location Calculation
     /// Calculates the location based on the approximate center of the airport's boundary and sets `latitude` and `longitude` to the calculated values. Won't generate if boundary is empty.
