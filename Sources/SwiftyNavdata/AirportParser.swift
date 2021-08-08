@@ -11,8 +11,10 @@ import Foundation
 public class AirportParser {
     
     //MARK: Airport parser
-    private static func decodeAirport(_ fileString: String, parseNodes: NodeParsingOption) -> Airport {
+    private static func decodeAirport(_ fileStr: String, parseNodes: NodeParsingOption) -> Airport {
         var airport = Airport(rowCode: -1, elevation: -1000, icao: "", name: "", runways: [], pavement: [], linearFeatures: [], airportBoundary: [], viewPoint: nil, startupLocations: [], lightBeacon: nil, lightingObjects: [], atcFrequencies: [])
+        // Removing carriage returns because I hate Bill Gates
+        let fileString = fileStr.replacingOccurrences(of: "\r\n", with: "\n")
         let lines = fileString.components(separatedBy: "\n")
         
         // To not write the same logic 10 times in the switch
